@@ -78,7 +78,11 @@ updates:
     directories:
       - "/02-Terraform"
       - "/02-Terraform/bootstrap"
-      - "/02-Terraform/modules/*"
+    # Child modules share the root provider. Upgrade AWS major versions in one
+    # reviewed migration across both roots and the shared module constraints.
+    ignore:
+      - dependency-name: "hashicorp/aws"
+        update-types: ["version-update:semver-major"]
     schedule:
       interval: monthly
     labels: ["dependencies", "terraform"]
