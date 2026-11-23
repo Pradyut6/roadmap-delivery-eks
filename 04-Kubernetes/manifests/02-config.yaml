@@ -1,0 +1,62 @@
+# ==============================================================================
+# ConfigMap and Secret — application configuration
+# ==============================================================================
+# The split is deliberate and is the whole point of having two object types:
+#
+#   ConfigMap  non-sensitive settings. Safe to read, safe to commit, visible in
+#              `kubectl describe`.
+#   Secret     credentials. Restricted by RBAC, encrypted at rest in etcd by the
+#              KMS key Terraform created (02-Terraform/modules/eks/main.tf →
+#              encryption_config).
+#
+# Putting a password in a ConfigMap is a real mistake, not a stylistic one:
+# ConfigMaps appear in full in `kubectl describe pod` output, in most read-only
+# RBAC roles, and in the ArgoCD UI.
+# ==============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ivolve-config
+  namespace: ivolve
+  labels:
+    app.kubernetes.io/name: ivolve-config
+    app.kubernetes.io/part-of: ivolve
+data:
+  # ----------------------------------------------------------------------------
+  # Database — non-sensitive connection parameters
+  # ----------------------------------------------------------------------------
+  # Note the key names match what auth-service/app.py actually reads:
+  #     os.environ.get("DB_HOST") / ("DB_PORT") / ("DB_USER") / ("DB_NAME")
+  # The password is NOT here — it lives in the Secret below.
+  DB_HOST: "mysql-0.mysql.ivolve.svc.cluster.local"
+  DB_PORT: "3306"
+  DB_NAME: "ivolve"
+  DB_USER: "ivolve_user"
+
+  # Consumed by the MySQL StatefulSet itself.
+  MYSQL_DATABASE: "ivolve"
+  MYSQL_USER: "ivolve_user"
+
+  # ----------------------------------------------------------------------------
+  # Service discovery — how the frontend reaches the two backends
+  # ----------------------------------------------------------------------------
+  # These are Kubernetes DNS names. `auth-service` resolves through CoreDNS to
+  # the ClusterIP of the Service of that name in this namespace; the Service
+  # then load-balances across its healthy pods.
+  #
+  # The short form works because pods receive a search domain of
+  # `ivolve.svc.cluster.local`. The fully-qualified form is used for the
+  # database (above) because a StatefulSet pod's stable identity requires it.
+  #
+  # Read by frontend/server.js:
+  #     process.env.AUTH_SERVICE_URL / process.env.ROADMAP_SERVICE_URL
+  AUTH_SERVICE_URL: "http://auth-service:5000"
+  ROADMAP_SERVICE_URL: "http://roadmap-service:8080"
+
+  # ----------------------------------------------------------------------------
+  # Runtime tuning
+  # ----------------------------------------------------------------------------
+  NODE_ENV: "production"
+  SESSION_COOKIE_SECURE: "true"
+  JAVA_OPTS: "-XX:MaxRAMPercentage=75.0 -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"

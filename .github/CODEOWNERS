@@ -1,0 +1,44 @@
+# ==============================================================================
+# CODEOWNERS
+# ==============================================================================
+# GitHub automatically requests a review from the listed owner on any PR that
+# touches a matching path. Combined with a branch-protection rule requiring
+# code-owner approval, this is how a real organisation stops an unreviewed
+# change to production infrastructure.
+#
+# Later rules override earlier ones — most specific last.
+# ==============================================================================
+
+# Default owner for everything
+*                           @Pradyut6
+
+# ------------------------------------------------------------------------------
+# Infrastructure — highest blast radius
+# ------------------------------------------------------------------------------
+# A mistake here can destroy the cluster or open the network. In a team this
+# would name the platform/SRE group.
+/02-Terraform/              @Pradyut6
+/03-Ansible/                @Pradyut6
+
+# ------------------------------------------------------------------------------
+# Security-sensitive paths
+# ------------------------------------------------------------------------------
+# In an organisation these would additionally require security-team approval.
+/02-Terraform/modules/eks/access.tf    @Pradyut6
+/02-Terraform/modules/eks/irsa.tf      @Pradyut6
+/04-Kubernetes/manifests/01-rbac.yaml  @Pradyut6
+/04-Kubernetes/manifests/02-config.yaml            @Pradyut6
+/04-Kubernetes/manifests/09-network-policies.yaml  @Pradyut6
+/06-ArgoCD/project.yaml     @Pradyut6
+/SECURITY.md                @Pradyut6
+/.github/                   @Pradyut6
+
+# ------------------------------------------------------------------------------
+# CI/CD — a change here affects every service
+# ------------------------------------------------------------------------------
+/05-Jenkins/vars/           @Pradyut6
+
+# ------------------------------------------------------------------------------
+# Application source
+# ------------------------------------------------------------------------------
+/src/                       @Pradyut6
