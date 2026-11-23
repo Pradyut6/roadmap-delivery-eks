@@ -190,9 +190,9 @@ Note that `ivolve-viewer` grants `configmaps` but **not `secrets`** — read acc
    What people think                    What actually happens
 ┌──────────────────────────────┐   ┌────────────────────────────────────┐
 │ kind: Secret                 │   │ data:                              │
-│   → "it's a Secret,          │   │   password: Q0hBTkdFX01FCg==       │
+│   → "it's a Secret,          │   │   password: <encoded value>       │
 │      so it's encrypted"      │   │                                    │
-│                              │   │ $ echo Q0hBTkdFX01FCg== | base64 -d│
+│                              │   │ $ echo "$ENCODED_VALUE" | base64 -d│
 │                              │   │ CHANGE_ME                          │
 │                              │   │                                    │
 │                              │   │ base64 is ENCODING, not encryption │
